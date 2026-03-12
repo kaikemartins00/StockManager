@@ -1,22 +1,38 @@
 package entities;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Product {
+public class Product implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	
+	private Integer id;
 	private String name;
-	private final Integer id;
 	private Integer quantity;
 	private Double price;
 	
+	public Product() {
+		
+	}
+	
 
-	public Product(String name, Integer id, Integer quantity, Double price) {
-		this.name = name;
+	public Product(Integer id, String name,  Integer quantity, Double price) {
 		this.id = id;
+		this.name = name;
 		this.quantity = quantity;
 		this.price = price;
 		
 	}
+
+	public Integer getId() {
+		return id;
+	}
+	
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
 
 	public String getName() {
 		return name;
@@ -24,10 +40,6 @@ public class Product {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public Integer getId() {
-		return id;
 	}
 
 	public Integer getQuantity() {
@@ -45,28 +57,10 @@ public class Product {
 	public void setPrice(Double price) {
 		this.price = price;
 	}
-	
-	public void addQuantity(int amount) {
-		this.quantity += amount;
-	}
-	
-	public void removeQuantity(int amount) {
-		
-		if(getQuantity() >= amount) {
-			this.quantity -= amount;
-		}else {
-			System.out.println("ESTOQUE INSUFICIENTE");
-		}
-	}
-	
-	public void updateprice(double newPrice) {
-		this.price = newPrice;
-	}
-	
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name);
+		return Objects.hash(id);
 	}
 
 	@Override
@@ -78,6 +72,8 @@ public class Product {
 		if (getClass() != obj.getClass())
 			return false;
 		Product other = (Product) obj;
-		return Objects.equals(id, other.id) && Objects.equals(name, other.name);
+		return Objects.equals(id, other.id);
 	}
+	
+	
 }

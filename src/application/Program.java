@@ -1,171 +1,191 @@
 package application;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
+import java.text.ParseException;
+import java.util.InputMismatchException;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Scanner;
 
+import db.DB;
+import db.DbException;
 import entities.Product;
-import management.Inventory;
+import model.mou.FactoryMou;
+import model.mou.ProductMou;
 
 public class Program {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
 
 		Locale.setDefault(Locale.US);
 		Scanner sc = new Scanner(System.in);
 
-		Map<Integer, Product> map = new HashMap<>();
+		ProductMou productMou = FactoryMou.createProductMou();
 
-		String path = "C:\\Users\\kaike\\Projetos\\StockManager\\stock.csv";
+		try {
 
-		Inventory inventory = new Inventory();
+			System.out.println("ADD / UPDATE / REMOVE ");
+			System.out.print("Enter the operation (A/U/R): ");
+			char optionAUR = sc.next().charAt(0);
 
-		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+			switch (optionAUR) {
+			case 'A':
+				System.out.print("How many products do you want to add? ");
+				int j = sc.nextInt();
 
-			String line;
-			while ((line = br.readLine()) != null) {
+				for (int i = 1; i <= j; i++) {
+					System.out.print("Product id #" + i + ": ");
+					int id = sc.nextInt();
+					sc.nextLine();
 
-				String[] fields = line.split(", ");
-				String name = fields[0];
-				int id = Integer.parseInt(fields[1]);
-				int quantity = Integer.parseInt(fields[2]);
-				double price = Double.parseDouble(fields[3]);
+					Product p = productMou.findById(id);
+					if (p == null) {
+						System.out.print("Product name #" + i + ": ");
+						String name = sc.nextLine();
 
-				Product product = new Product(name, id, quantity, price);
-				map.put(id, product);
-			}
+						System.out.print("Quantity #" + i + ": ");
+						int quantity = sc.nextInt();
 
-		} catch (IOException e) {
-			System.out.println("...");
-		}
+						System.out.print("Price #" + i + ": ");
+						double price = sc.nextDouble();
+						sc.nextLine();
 
-		System.out.println("ADD / UPDATE / REMOVE ");
-		System.out.print("Enter the operation (A/U/R): ");
-		char option = sc.next().charAt(0);
+						Product product = new Product(id, name, quantity, price);
+						productMou.insert(product);
 
-		if (option == 'A') {
-			System.out.print("How many products do you want to add? ");
-			int n = sc.nextInt();
-			sc.nextLine();
+					} else {
+						System.out.println("PRODUCT EXISTING");
+					}
+				}
+				break;
 
-			for (int i = 1; i <= n; i++) {
+			case 'U':
+				System.out.println("UPDATE QUANTITY(Q) OR PRICE(P).");
+				System.out.print("Enter the operation (Q/P): ");
+				char optionQP = sc.next().charAt(0);
 
-				System.out.print("Product name #" + i + ": ");
-				String name = sc.nextLine();
+				switch (optionQP) {
+				case 'P':
+					System.out.print("How many products will you update the price of? ");
+					int k = sc.nextInt();
 
-				System.out.print("Product code #" + i + ": ");
-				int id = sc.nextInt();
+					for (int i = 1; i <= k; i++) {
 
-				System.out.print("Quantity #" + i + ": ");
-				int quantity = sc.nextInt();
+						System.out.print("What is the product ID #" + i + " that will update the price? ");
+						int id = sc.nextInt();
 
-				System.out.print("Price #" + i + ": ");
-				double price = sc.nextDouble();
+						Product p = productMou.findById(id);
+						if (p != null) {
+							System.out.print("What is the new price of product " + i + " ? ");
+							double newPrice = sc.nextDouble();
+
+							Product product = new Product();
+							product.setId(id);
+							product.setPrice(newPrice);
+							productMou.updatePrice(product);
+
+							System.out.println("Price of product " + id + " updated!");
+						} else {
+							System.out.println("PRODUCT " + id + " DOES NOT EXIST");
+						}
+					}
+					break;
+
+				case 'Q':
+					System.out.println("ADD(A) ou REMOVE(R) QUANTITY");
+					System.out.print("Enter the operation (A/R): ");
+					char optionARQ = sc.next().charAt(0);
+
+					switch (optionARQ) {
+					case 'A':
+						System.out.print("How many products do you want to add quantity of? ");
+						int n = sc.nextInt();
+
+						for (int i = 1; i <= n; i++) {
+							System.out.print("What is the product id #" + i + " that will add the quantity? ");
+							int id = sc.nextInt();
+
+							Product p = productMou.findById(id);
+							if (p != null) {
+								System.out.print("Quantity you will add? ");
+								int addQuantity = sc.nextInt();
+
+								Product product = new Product();
+								product.setId(id);
+								product.setQuantity(addQuantity);
+								productMou.updateAddQuantity(product);
+
+								System.out.println("Product quantity updated to " + id);
+							} else {
+								System.out.println("PRODUCT " + id + " DOES NOT EXIST");
+							}
+						}
+						break;
+
+					case 'R':
+						System.out.print("How many products do you want to remove? ");
+						int l = sc.nextInt();
+
+						for (int i = 1; i <= l; i++) {
+							System.out.print("What is the product id #" + i + " from which you will withdraw the quantity? ");
+							int id = sc.nextInt();
+
+							Product p = productMou.findById(id);
+							if (p != null) {
+								System.out.print("How much will you withdraw? ");
+								int removeQuantity = sc.nextInt();
+
+								Product product = new Product();
+								product.setId(id);
+								product.setQuantity(removeQuantity);
+								productMou.updateRemoveQuantity(product);
+
+								System.out.println("Product quantity updated to " + id);
+							} else {
+								System.out.println("PRODUCT " + id + " DOES NOT EXIST");
+							}
+						}
+						break;
+					}
+					break;
+					default:
+						System.out.println("Invalid option");
+					
+				}
+				break;
+				
+
+			case 'R':
+				System.out.print("How many products do you want to remove? ");
+				int m = sc.nextInt();
 				sc.nextLine();
 
-				Product product = new Product(name, id, quantity, price);
-				inventory.getList().add(product);
-				map.put(id, product);
-
-			}
-
-			System.out.println("PRODUCT ADDED!");
-		}
-
-		if (option == 'U') {
-			System.out.println("UPDATE QUANTITY(Q) OR PRICE(P).");
-			System.out.print("Enter the operation (Q/P): ");
-			char optionQP = sc.next().charAt(0);
-
-			if (optionQP == 'P') {
-				System.out.print("Product ID that will update the price? ");
-				int id = sc.nextInt();
-
-				Product product = map.get(id);
-
-				if (product != null) {
-					System.out.print("What is the new price? ");
-					double newPrice = sc.nextDouble();
-
-					product.updateprice(newPrice);
-					System.out
-							.println("Price of the product " + product.getName() + " updated to " + product.getPrice());
-				} else {
-					System.out.println("Product not found");
-				}
-			}
-
-			if (optionQP == 'Q') {
-				System.out.println("ADD(A) ou REMOVE(R) QUANTITY");
-				System.out.print("Enter the operation (A/R): ");
-				char optionU = sc.next().charAt(0);
-
-				if (optionU == 'A') {
-					System.out.println("Which product ID will be added? ");
+				for (int i = 1; i <= m; i++) {
+					System.out.print("Product #" + i + " id: ");
 					int id = sc.nextInt();
 
-					Product product = map.get(id);
-
-					if (product != null) {
-						System.out.println("How much will you add? ");
-						int amount = sc.nextInt();
-
-						product.addQuantity(amount);
-						System.out.println("Quantity of the product " + product.getName() + " updated to "
-								+ product.getQuantity());
+					Product p = productMou.findById(id);
+					if (p != null) {
+						productMou.deleteById(id);
+						System.out.println("PRODUCT " + id + " REMOVED! ");
 					} else {
-						System.out.println("Product not found");
+						System.out.println("PRODUCT " + id + " DOES NOT EXIST");
 					}
 
 				}
-				if (optionU == 'R') {
-					System.out.println("What is the product ID from which you will withdraw the quantity? ");
-					int id = sc.nextInt();
-
-					Product product = map.get(id);
-
-					if (product != null) {
-						System.out.println("How much will you withdraw? ");
-						int amount = sc.nextInt();
-
-						product.removeQuantity(amount);
-						System.out.println("Quantity of the product " + product.getName() + " updated to "
-								+ product.getQuantity());
-					} else {
-						System.out.println("Product not found");
-					}
-				}
-
+				break;
+				default:
+					System.out.println("Invalid option");
 			}
+			
+			
+		} 
+		catch(DbException e){
+			System.out.println("ERROR! " + e.getMessage());
+		}
+		finally {
+			sc.close();
+
+			DB.closeConnection();
 		}
 
-		if (option == 'R') {
-			System.out.println("Which product ID will you be removing? ");
-			int id = sc.nextInt();
-
-			Product product = map.get(id);
-
-			if (product != null) {
-				map.remove(id);
-				System.out.println("PRODUCT REMOVED!");
-			} else {
-				System.out.println("Product not found");
-			}
-		}
-
-		try (FileWriter arq = new FileWriter(path)) {
-			for (Product p : map.values()) {
-				arq.write(p.getName() + ", " + p.getId() + ", " + p.getQuantity() + ", " + p.getPrice() + "\n");
-			}
-
-		} catch (IOException e) {
-			System.out.println("Error saving: " + e.getMessage());
-		}
-
-		sc.close();
 	}
+
 }
