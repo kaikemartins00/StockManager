@@ -1,7 +1,6 @@
 package application;
 
 import java.text.ParseException;
-import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.Scanner;
 
